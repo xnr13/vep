@@ -141,6 +141,7 @@ for i in $(find input/ -name '*.vcf' -mmin +$waitperiod)
   -input_file ${mount_dir}/$i \
   --offline \
   --cache \
+  --cache_version 104 \
   --dir_cache ${mount_dir}/reference \
   --refseq \
   --hgvs \
