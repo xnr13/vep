@@ -77,7 +77,7 @@ if [ ! -f "reference/${fasta}.fa.gz" ]; then
     exit
   else
     wget -P reference http://ftp.ensembl.org/pub/grch37/current/fasta/homo_sapiens/dna/${fasta}.fa.gz
-    gzip -d reference/${fasta}.fa.gz > reference/${fasta}.fa
+    gzip -d -c reference/${fasta}.fa.gz > reference/${fasta}.fa
     bgzip -c reference/${fasta}.fa > reference/${fasta}.fa.gz
   fi
 fi
@@ -105,22 +105,30 @@ if [ $(df -P . | tail -1 | xargs | cut -d" " -f4) -lt 5000000 ];then
   printf "INFO: There is less then 5GB space left on your disk, please check\n"
 fi
 
+#for every file that ends with .vcf that stayed there for longer than timeout (that value is stored in the config)
 #check for whitespaces and repaces them with underscore
 SAVEIFS=$IFS
 IFS=$'\n'
-for f in $(find input/ -name '*\ *.vcf')
-do
-  mv "$f" "${f// /_}"
-  printf "I don't like whitespaces: $f is renamed to ${f// /_}"
-done
+for f in $(find input/ -name '*\ *.vcf' -mmin +$waitperiod)
+  do
+    basename=${f##*/}
+    basename=${basename// /_}
+    basename=${basename//(/}
+    basename=${basename//)/}
+    mv "$f" "input/$basename"
+    printf "I don't like whitespaces: $f is renamed to $basename\n"
+    # Remove empty directories after files have been moved
+    if [ ! "$(ls -A ${f%/*}/)" ] && [ "${f%/*}/" != "input/" ];then
+      rmdir "${f%/*}/"
+    fi
+  done
 IFS=$SAVEIFS
 
-#for every file that ends with .vfc that stayed ther for longer than timeout (that value is stored in the config)
 for i in $(find input/ -name '*.vcf' -mmin +$waitperiod)
   do
     #BASENAME=$( echo $i | cut -d'/' -f2)
     basename=${i##*/}
-    basename_we=$( echo $basename | cut -d'.' -f1)
+    basename_we=$(basename $basename ".vcf")
     outname=${basename_we}_VEP_RefSeq.vcf
 
     cp $i archive
@@ -149,12 +157,42 @@ for i in $(find input/ -name '*.vcf' -mmin +$waitperiod)
   --fasta ${mount_dir}/reference/${fasta}.fa.gz \
   --format vcf \
   --vcf \
+  --check_ref \
+  --dont_skip \
   --force_overwrite \
   --no_stats \
   -o stdout | \
 ./filter_vep \
 --force_overwrite  \
---filter 'Feature matches NM_002529 or Feature matches NM_006180 or Feature matches NM_001012338 or Feature matches NM_020975 or Feature matches NM_005343 or Feature matches NM_000455 or Feature matches NM_203500 or Feature matches NM_004304 or Feature matches NM_004333 or Feature matches NM_001904 or Feature matches NM_005228 or Feature matches NM_023110 or (Feature matches NM_000141 and EXON is 8/18)or Feature matches NM_022970 or Feature matches NM_000142 or Feature matches NM_213647 or Feature matches NM_004448 or Feature matches NM_033360 or Feature matches NM_002755 or Feature matches NM_001127500 or Feature matches NM_002524 or Feature matches NM_006218 or Feature matches NM_000314 or Feature matches NM_000546 or Feature matches NM_002944 or Feature matches NM_005896 or Feature matches NM_002168' \
+--filter '
+          Feature matches NM_002529 or \
+          Feature matches NM_006180 or \
+          Feature matches NM_001012338 or \
+          Feature matches NM_020975 or \
+          Feature matches NM_005343 or \
+          Feature matches NM_000455 or \
+          Feature matches NM_203500 or \
+          Feature matches NM_004304 or \
+          Feature matches NM_004333 or \
+          Feature matches NM_001904 or \
+          Feature matches NM_005228 or \
+          Feature matches NM_023110 or \
+          Feature matches NM_000141 or \
+         (Feature matches NM_022970 and EXON is 8/18) or \
+          Feature matches NM_000142 or \
+          Feature matches NM_213647 or \
+          Feature matches NM_004448 or \
+          Feature matches NM_033360 or \
+          Feature matches NM_002755 or \
+          Feature matches NM_001127500 or \
+          Feature matches NM_002524 or \
+          Feature matches NM_006218 or \
+          Feature matches NM_000314 or \
+          Feature matches NM_000546 or \
+          Feature matches NM_002944 or \
+          Feature matches NM_005896 or \
+          Feature matches NM_002168
+          ' \
  --only_matched \
   -output_file ${mount_dir}/output/$outname ; chmod 666 ${mount_dir}/output/* "  ) >> archive/logs/$(date +"%Y%m%d")docker.log
 
