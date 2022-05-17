@@ -157,6 +157,8 @@ for i in $(find input/ -name '*.vcf' -mmin +$waitperiod)
   --fasta ${mount_dir}/reference/${fasta}.fa.gz \
   --format vcf \
   --vcf \
+  --check_ref \
+  --dont_skip \
   --force_overwrite \
   --no_stats \
   -o stdout | \
