@@ -8,3 +8,5 @@ output/
 reference/
 
 wget-log
+
+test/ckb\.jax\.org/
