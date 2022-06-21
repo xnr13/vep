@@ -10,9 +10,9 @@ waitperiod=5
 dir=(input output reference archive archive/logs)
 needed_commands=(wget tar docker pgrep gzip bgzip )
 #name of reference file
-refseq="homo_sapiens_refseq_vep_104_GRCh37"
+refseq="homo_sapiens_refseq_vep_106_GRCh38"
 #name of the fasta file
-fasta="Homo_sapiens.GRCh37.dna.primary_assembly"
+fasta="Homo_sapiens.GRCh38.dna.primary_assembly"
 #name of docker container
 docker_name="vep_nngm"
 #dir of mounting
@@ -65,7 +65,7 @@ if [ ! -f "reference/${refseq}.tar.gz" ]; then
     printf "ERROR: There is not enough diskspace for downloading the refseq file\nEXIT\n"
     exit
   else
-    wget -P  reference http://ftp.ensembl.org/pub/release-104/variation/indexed_vep_cache/${refseq}.tar.gz
+    wget -P  reference http://ftp.ensembl.org/pub/release-106/variation/indexed_vep_cache/${refseq}.tar.gz
     tar xzf reference/${refseq}.tar.gz --directory reference
   fi
 fi
@@ -76,7 +76,7 @@ if [ ! -f "reference/${fasta}.fa.gz" ]; then
     printf "ERROR: There is not enough diskspace for downloading the FASTA file\nEXIT\n"
     exit
   else
-    wget -P reference http://ftp.ensembl.org/pub/grch37/current/fasta/homo_sapiens/dna/${fasta}.fa.gz
+    wget -P reference http://ftp.ensembl.org/pub/release-106/fasta/homo_sapiens/dna/${fasta}.fa.gz
     gzip -d -c reference/${fasta}.fa.gz > reference/${fasta}.fa
     bgzip -c reference/${fasta}.fa > reference/${fasta}.fa.gz
   fi
@@ -94,7 +94,7 @@ if [ $(crontab -l | grep $scriptname | wc -l) -eq 0 ];then
 fi
 
 #pull the right docker image
-docker pull ensemblorg/ensembl-vep:release_104.3
+docker pull ensemblorg/ensembl-vep:release_106.0
 
 #run docker image
 docker_con=$( docker run -d -i -t -v $(pwd):${mount_dir} ensemblorg/ensembl-vep )
@@ -149,7 +149,7 @@ for i in $(find input/ -name '*.vcf' -mmin +$waitperiod)
   -input_file ${mount_dir}/$i \
   --offline \
   --cache \
-  --cache_version 104 \
+  --cache_version 106 \
   --dir_cache ${mount_dir}/reference \
   --refseq \
   --hgvs \
