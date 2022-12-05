@@ -97,7 +97,7 @@ fi
 docker pull ensemblorg/ensembl-vep:release_104.3
 
 #run docker image
-docker_con=$( docker run -d -i -t -v $(pwd):${mount_dir} ensemblorg/ensembl-vep )
+docker_con=$( docker run -d -i -t -v $(pwd):${mount_dir} ensemblorg/ensembl-vep:release_104.3 )
 printf "docker image with the ID $docker_con is started\n"
 
 #check if enough space is left
