@@ -750,7 +750,6 @@ def strip(string):
 
 def populateJAXCKB(panel):
     assert isinstance(panel,list)
-    # os.popen( "git clone https://github.com/znestor/ckb.jax.org" )
 
     # https://stackoverflow.com/a/10378012
     path = "ckb.jax.org/geneVariant/"
@@ -764,13 +763,13 @@ def populateJAXCKB(panel):
             soup = BeautifulSoup(content, features="lxml")
 
             hugoSymbol = strip( soup.find(class_="btn btn-default btn-gene").get_text() )
-            print(hugoSymbol)
+
 
             try:
-                JAXCKB = dict( (strip( elem.td.get_text() ), strip(elem.td.find_next_sibling().get_text()) ) for elem in soup.find(id="TranscriptTabTable").children if getattr(elem, "name", None) == "tr" )
+                jaxCKB = dict( (strip( elem.td.get_text() ), strip(elem.td.find_next_sibling().get_text()) ) for elem in soup.find(id="TranscriptTabTable").children if getattr(elem, "name", None) == "tr" )
                 for panelItem in panel:
                     if panelItem["hugoSymbol"] == hugoSymbol:
-                        panelItem["JAXCKB"] = JAXCKB
+                        panelItem["jaxCKB"] = jaxCKB
                         # if hugoSymbol == "TP53":
                         #     return
             except:
@@ -781,6 +780,7 @@ def populateJAXCKB(panel):
 
 
 populateJAXCKB(panel)
+
 
 
 
@@ -833,8 +833,8 @@ def getAllTranscripts(element):
 
 
     try:
-        print( element.get("JAXCKB").get("Transcript").split(".") )
-        ( accession, version ) = element.get("JAXCKB").get("Transcript").split(".")
+        print( element.get("jaxCKB").get("Transcript").split(".") )
+        ( accession, version ) = element.get("jaxCKB").get("Transcript").split(".")
 
         addTranscripts( element, accession, int(version) )
     except:
@@ -888,7 +888,7 @@ for element in panel:
                                               #|EXON/TOTALEX||TRANSCRIPT|
                                                     #[0-9]*/*[0-9]* has to be there, because some variants match exon AND an intron at the same time
         expVariants = element["nNGM"]["exons"].setdefault(exonNR, {"expVariants": "Not profiled", "obsVariants": "Not profiled"}).get("expVariants")
-        obsVariants = int( os.popen('grep -c "|{0}/{1}|[0-9]*/*[0-9]*|{2}" ../output/output.test_hg19_VEP_RefSeq.vcf '.format( exonNR, element["nNGM"]["exonCount"], element["nNGM"]["grch37RefSeq"] ) ).read() )
+        obsVariants = int( os.popen('grep -c "|{0}/{1}|[0-9]*/*[0-9]*|{2}" output.test_hg19_VEP_RefSeq.vcf '.format( exonNR, element["nNGM"]["exonCount"], element["nNGM"]["grch37RefSeq"] ) ).read() )
 
         if str(expVariants) != "Not profiled":
             difference = obsVariants - expVariants
@@ -918,7 +918,7 @@ for element in panel:
                                               #|EXON/TOTALEX||TRANSCRIPT|
                                                     #[0-9]*/*[0-9]* has to be there, because some variants match exon AND an intron at the same time
         expVariants = element["nNGM"]["exons"].setdefault(exonNR, {"expVariants": "Not profiled", "obsVariants": "Not profiled"}).get("expVariants")
-        obsVariants = int( os.popen('grep -c "|{0}/{1}|[0-9]*/*[0-9]*|{2}" ../output/output.test_hg19_VEP_RefSeq.vcf '.format( exonNR, element["nNGM"]["exonCount"], element["nNGM"]["grch37RefSeq"] ) ).read() )
+        obsVariants = int( os.popen('grep -c "|{0}/{1}|[0-9]*/*[0-9]*|{2}" output.test_hg19_VEP_RefSeq.vcf '.format( exonNR, element["nNGM"]["exonCount"], element["nNGM"]["grch37RefSeq"] ) ).read() )
 
         if str(expVariants) != "Not profiled":
             difference = obsVariants - expVariants

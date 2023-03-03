@@ -1,0 +1,14 @@
+#!/bin/sh
+# VEP-test
+sudo apt update
+sudo apt install -y python3-jinja2 python3-bs4 httrack diamond-aligner
+
+# website copying
+httrack --update https://ckb.jax.org \
+-I0 -C0 -Q \
+-* \
++https://ckb.jax.org/assets/* \
++https://ckb.jax.org/gene/* \
++https://ckb.jax.org/geneVariant/* \
+
+python3 ./test_run.py
